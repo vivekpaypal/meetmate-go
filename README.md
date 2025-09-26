@@ -1,73 +1,204 @@
-# Welcome to your Lovable project
+# TechMeet 2024 - Tech Meetup Registration App
 
-## Project info
+A professional web application for tech meetup registration featuring a React frontend with Golang backend integration.
 
-**URL**: https://lovable.dev/projects/b59d645c-3b3f-41ce-bfbe-3acbc33245f6
+## 🚀 Features
 
-## How can I edit this code?
+- **Landing Page**: Event details, speaker information, and track descriptions
+- **Registration Form**: Comprehensive form with validation for attendee registration
+- **Responsive Design**: Mobile-first design with dark theme
+- **Form Validation**: Client-side validation with Zod schema
+- **Professional UI**: Modern tech-focused design with gradients and animations
 
-There are several ways of editing your application.
+## 🛠 Tech Stack
 
-**Use Lovable**
+### Frontend (Current Implementation)
+- React 18 with TypeScript
+- Tailwind CSS for styling
+- React Router for navigation
+- React Hook Form with Zod validation
+- Radix UI components (shadcn/ui)
+- Lucide React icons
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b59d645c-3b3f-41ce-bfbe-3acbc33245f6) and start prompting.
+### Backend (Implementation Guide Provided)
+- Golang with Gorilla Mux
+- GORM for database operations
+- PostgreSQL database
+- Flyway for database migrations
+- Docker for containerization
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📁 Project Structure
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+techmeet-app/
+├── frontend/                 # Current Lovable React app
+│   ├── src/
+│   │   ├── components/ui/    # Reusable UI components
+│   │   ├── pages/           # Landing and Register pages
+│   │   ├── assets/          # Images and static assets
+│   │   └── hooks/           # Custom React hooks
+│   └── public/
+├── backend/                  # Golang backend (see backend-structure.md)
+├── Dockerfile               # Multi-stage Docker build
+├── docker-compose.yml       # Full stack deployment
+└── README.md
 ```
 
-**Edit a file directly in GitHub**
+## 🎨 Design Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Tech-focused color scheme**: Purple and cyan gradients
+- **Dark theme**: Professional dark background with light text
+- **Animated elements**: Floating animations and hover effects
+- **Responsive layout**: Works seamlessly on mobile and desktop
+- **Professional typography**: Clean, modern font styling
 
-**Use GitHub Codespaces**
+## 📋 Registration Form Fields
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Name**: Required, 2-100 characters
+- **Email**: Required, valid email format
+- **Company**: Required, 2-100 characters  
+- **Department**: Required, 2-100 characters
+- **Role**: Required, 2-100 characters
+- **Interested Track**: Required, dropdown selection
+  - AI & Machine Learning
+  - Software Engineering
+  - DevOps & Cloud
+  - All Tracks
+- **Newsletter**: Optional checkbox
+- **Terms**: Required checkbox
 
-## What technologies are used for this project?
+## 🚀 Local Development
 
-This project is built with:
+### Frontend Only (Current State)
+```bash
+# Install dependencies
+npm install
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Start development server
+npm run dev
 
-## How can I deploy this project?
+# Build for production
+npm run build
+```
 
-Simply open [Lovable](https://lovable.dev/projects/b59d645c-3b3f-41ce-bfbe-3acbc33245f6) and click on Share -> Publish.
+### Full Stack Development (After Backend Implementation)
 
-## Can I connect a custom domain to my Lovable project?
+1. **Clone and setup**:
+```bash
+git clone <repository-url>
+cd techmeet-app
+```
 
-Yes, you can!
+2. **Run with Docker Compose**:
+```bash
+# Build and start all services
+docker-compose up --build
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Run in background
+docker-compose up -d
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+3. **Manual setup**:
+
+**Frontend**:
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+**Backend**:
+```bash
+cd backend
+go mod download
+go run cmd/server/main.go
+```
+
+**Database**:
+```bash
+# Start PostgreSQL
+docker run -d --name postgres \
+  -e POSTGRES_DB=techmeet \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=password \
+  -p 5432:5432 postgres:15-alpine
+
+# Run Flyway migrations
+flyway -url=jdbc:postgresql://localhost:5432/techmeet \
+  -user=postgres -password=password \
+  -locations=filesystem:backend/migrations migrate
+```
+
+## 🌐 Environment Variables
+
+Create `.env` file in backend directory:
+```env
+DB_HOST=localhost
+DB_USER=postgres
+DB_PASSWORD=password
+DB_NAME=techmeet
+DB_PORT=5432
+PORT=8080
+```
+
+## 📡 API Endpoints
+
+- `POST /api/register` - Submit registration
+- `GET /api/registrations` - Get all registrations (admin)
+- `GET /` - Serve React app (all other routes)
+
+## 🐳 Docker Deployment
+
+The application uses a multi-stage Docker build:
+
+1. **Stage 1**: Build React frontend
+2. **Stage 2**: Build Golang backend  
+3. **Stage 3**: Create minimal Alpine image with both
+
+```bash
+# Build image
+docker build -t techmeet-app .
+
+# Run container
+docker run -p 8080:8080 \
+  -e DB_HOST=your-db-host \
+  -e DB_USER=postgres \
+  -e DB_PASSWORD=password \
+  -e DB_NAME=techmeet \
+  techmeet-app
+```
+
+## 🔒 Security Features
+
+- Input validation on both client and server side
+- SQL injection prevention with GORM
+- CORS configuration for API security
+- Email uniqueness constraints
+- XSS protection through proper data handling
+
+## 📱 Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📞 Contact
+
+For questions about TechMeet 2024, contact us at hello@techmeet2024.com
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+**Note**: The current implementation includes a fully functional React frontend. The Golang backend structure and implementation guide is provided in `backend-structure.md`. The frontend currently simulates API calls - replace with actual backend calls once implemented.
