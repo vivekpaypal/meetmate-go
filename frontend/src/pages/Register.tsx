@@ -51,17 +51,29 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call - replace with actual Golang backend call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In real implementation, send to Golang backend:
-      // const response = await fetch('/api/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data)
-      // });
-      
-      console.log('Registration data:', data);
+      // Send to Golang backend
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          company: data.company,
+          department: data.department,
+          role: data.role,
+          interested_track: data.interestedTrack,
+          newsletter: data.newsletter,
+          terms: data.terms
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || 'Registration failed');
+      }
+
+      const result = await response.json();
+      console.log('Registration successful:', result);
       setIsSuccess(true);
       
       toast({
@@ -69,9 +81,10 @@ const Register = () => {
         description: "We've sent a confirmation email to your address.",
       });
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: "Registration Failed",
-        description: "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {

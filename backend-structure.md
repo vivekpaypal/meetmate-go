@@ -3,10 +3,8 @@
 ## Project Structure
 ```
 techmeet-app/
-├── frontend/                 # React app (current Lovable project)
-│   ├── src/
-│   ├── public/
-│   └── package.json
+├──
+
 ├── backend/                  # Golang backend
 │   ├── cmd/
 │   │   └── server/

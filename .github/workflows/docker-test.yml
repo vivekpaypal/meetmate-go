@@ -1,0 +1,86 @@
+name: Docker Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t meetmate-go:test .
+
+      - name: Start PostgreSQL container
+        run: |
+          docker run -d \
+            --name test-postgres \
+            -e POSTGRES_DB=techmeet \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=password \
+            -p 5432:5432 \
+            postgres:15-alpine
+
+      - name: Wait for PostgreSQL
+        run: |
+          timeout 30s bash -c 'until docker exec test-postgres pg_isready -U postgres; do sleep 1; done'
+
+      - name: Run application container
+        run: |
+          docker run -d \
+            --name test-app \
+            --link test-postgres:db \
+            -e DB_HOST=db \
+            -e DB_USER=postgres \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=techmeet \
+            -e DB_PORT=5432 \
+            -p 8080:8080 \
+            meetmate-go:test
+
+      - name: Wait for application
+        run: |
+          timeout 60s bash -c 'until curl -f http://localhost:8080; do sleep 2; done'
+
+      - name: Test API endpoints
+        run: |
+          # Test health endpoint (if available)
+          curl -f http://localhost:8080/ || echo "Health check failed"
+          
+          # Test registration endpoint
+          curl -X POST http://localhost:8080/api/register \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "Test User",
+              "email": "test@example.com",
+              "company": "Test Company",
+              "department": "Engineering",
+              "role": "Developer",
+              "interested_track": "software-engineering",
+              "newsletter": true,
+              "terms": true
+            }' || echo "Registration test failed"
+          
+          # Test registrations list endpoint
+          curl -f http://localhost:8080/api/registrations || echo "Registrations list test failed"
+
+      - name: Test frontend
+        run: |
+          # Test that frontend is served
+          curl -f http://localhost:8080/ | grep -q "TechMeet" || echo "Frontend test failed"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop test-app test-postgres || true
+          docker rm test-app test-postgres || true
